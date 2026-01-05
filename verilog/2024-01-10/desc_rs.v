@@ -56,12 +56,12 @@ always @(posedge clock) if (reset_ == 1) #3
         S2:
             begin
                 DAV_ <= 0; // invio al consumatore
-                STAR <= (rfd == 0) ? S3 : S2;
+                STAR <= (rfd ==1) ? S3 : S2;
             end
         S3:
             begin
                 DAV_ <= 1; // ho inviato il dato, non e' piu' available
-                STAR <= (rfd == 1) ? S0 : S3; // pronto per ricevere nuovi dati?
+                STAR <= (rfd == 0) ? S0 : S3; // pronto per ricevere nuovi dati?
             end
         endcase
 endmodule
