@@ -1,0 +1,143 @@
+1. registri, 2. blocchi operativi
+ADDR:
+    SA_0: 0X100
+    SA_3: 0X101
+    SB_0: 0X121
+
+IOR_:
+    SA_2: 1
+    SA_5: 1
+    negli altri stati a 0
+
+IOW_:
+    SB_1: 0
+    SB_4: 0
+    negli altri stati a 1
+
+DIR:
+    SA_0: 0
+    SB_0: 1
+
+A:
+    SA_2: 1
+    SA_5: 1
+    gli altri stati a 0
+
+DATA:
+    SA_0: mul[15:8]
+
+
+quindi
+ always @(reset_ == 0) #1 ADDR <= 0;
+    always @(posedge clock) if(reset_ == 1) #3 begin
+        casex (STAR)
+            SA_0: ADDR <= 16'h0100;
+            SA_3: ADDR <= 16'h0101;
+            SB_0: ADDR <= 16'h0121;
+        endcase
+    end
+
+
+    always @(reset_ == 0) #1 IOR_ <= 1;
+    always @(posedge clock) if(reset_ == 1) #3 begin
+        casex (STAR)
+            SA_2: IOR_ <= 1;
+            SA_5: IOR_ <= 1;
+            default: IOR_ <= 0;
+        endcase
+    end
+
+    always @(reset_ == 0) #1 IOW_ <= 1;
+    always @(posedge clock) if(reset_ == 1) #3 begin
+        casex (STAR)
+            SB_1: IOW_ <= 0;
+            SB_4: IOW_ <= 0;
+            default: IOW_ <= 1
+        endcase
+    end
+
+    always @(reset_ == 0) #1 DIR <= 0;
+    always @(posedge clock) if(reset_ == 1) #3 begin
+        casex (STAR)
+            SA_0: DIR <= 0;
+            SB_0: DIR <= 1;
+            default: DIR <= 1;
+        endcase
+    end
+
+    always @(reset_ == 0) #1 A <= 0;
+    always @(posedge clock) if(reset_ == 1) #3 begin
+        casex (STAR)
+            SA_2: A <= 1;
+            SB_5: A <= 1;
+            default: A <= 0;
+        endcase
+    end
+
+    always @(reset_ == 0) #1 DATA <= 0;
+    always @(posedge clock) if(reset_ == 1) #3 begin
+        casex (STAR)
+            SA_0: DATA <= mil[15:8];
+            SB_0: DATA <= 1;
+            default: DATA <= 1;
+        endcase
+    end
+
+    always @(reset_ == 0) #1 STAR <= 0;
+    always @(posedge clock) if(reset_ == 1) #3 begin
+        casex (STAR)
+            // ...
+        endcase
+    end
+
+endmodule
+
+
+
+3. variabili di comando
+b[1:0] (per ADDR): 00=Hold, 01=0x100, 10=0x101, 11=0x121.
+
+b[2] (per IOR_): 1=Attiva (Low), 0=Disattiva (High).
+
+b[3] (per IOW_): 1=Attiva (Low), 0=Disattiva (High).
+
+b[4] (per DIR): 1=Output, 0=Input.
+
+b[5] (per A): 1=Load da data, 0=Hold.
+
+b[7:6] (per DATA): 00=Hold, 01=Byte Alto, 10=Byte Basso.
+
+4. variabili di condizionamento
+
+mi serve solo 1 variabile per STAR <= (data[0]) ? SA_3 : SA_0
+
+SA_2: STAR <= (c0) ? SA_3 : SA_0;
+assign c0 = data[0];
+// STAR
+always @(reset_ == 0) #1 STAR <= SA_0;
+always @(posedge clock) if(reset_ == 1) #3 begin
+    casex (STAR)
+        SA_0: STAR <= SA_1;
+        SA_1: STAR <= SA_2;
+
+        SA_2: STAR <= (c0) ? SA_3 : SA_0;
+
+        SA_3: STAR <= SA_4;
+        SA_4: STAR <= SA_5;
+        SA_5: STAR <= SB_0;
+
+        SB_0: STAR <= SB_1;
+        SB_1: STAR <= SB_2;
+        SB_2: STAR <= SB_3;
+        SB_3: STAR <= SB_4;
+        SB_4: STAR <= SB_5;
+        SB_5: STAR <= SA_0;
+
+        default: STAR <= SA_0;
+    endcase
+end
+
+
+
+5. separo le parti
+
